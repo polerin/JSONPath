@@ -1,5 +1,5 @@
 <?php
-namespace Flow\JSONPath;
+namespace Flow\JSONPath\Tests;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
@@ -10,12 +10,20 @@ use \Peekmo\JsonPath\JsonPath as PeekmoJsonPath;
 class JSONPathTest extends \PHPUnit_Framework_TestCase
 {
 
+    public $Subject = null;
+
+    public function setUp()
+    {
+	// Making this test reusable so JSONStoreTest can inheret all the tests
+        $this->Subject = new JSONPath($this->exampleData());
+    }
+
     /**
      * $.store.books[0].title
      */
     public function testChildOperators()
     {
-        $result = (new JSONPath($this->exampleData()))->find('$.store.books[0].title');
+        $result = $this->Subject->find('$.store.books[0].title');
         $this->assertEquals('Sayings of the Century', $result[0]);
     }
 
@@ -24,7 +32,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testChildOperatorsAlt()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][0]['title']");
+        $result = $this->Subject->find("$['store']['books'][0]['title']");
         $this->assertEquals('Sayings of the Century', $result[0]);
     }
 
@@ -34,28 +42,28 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
     public function testFilterSliceA()
     {
         // Copy all items... similar to a wildcard
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][:].title");
+        $result = $this->Subject->find("$['store']['books'][:].title");
         $this->assertEquals(['Sayings of the Century', 'Sword of Honour', 'Moby Dick', 'The Lord of the Rings'], $result);
     }
 
     public function testFilterSliceB()
     {
         // Fetch every second item starting with the first index (odd items)
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][1::2].title");
+        $result = $this->Subject->find("$['store']['books'][1::2].title");
         $this->assertEquals(['Sword of Honour', 'The Lord of the Rings'], $result);
     }
 
     public function testFilterSliceC()
     {
         // Fetch up to the second index
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][0:2:1].title");
+        $result = $this->Subject->find("$['store']['books'][0:2:1].title");
         $this->assertEquals(['Sayings of the Century', 'Sword of Honour', 'Moby Dick'], $result);
     }
 
     public function testFilterSliceD()
     {
         // Fetch up to the second index
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][-1:].title");
+        $result = $this->Subject->find("$['store']['books'][-1:].title");
         $this->assertEquals(['The Lord of the Rings'], $result);
     }
 
@@ -65,7 +73,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
     public function testFilterSliceE()
     {
         // Fetch up to the second index
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][:-2].title");
+        $result = $this->Subject->find("$['store']['books'][:-2].title");
         $this->assertEquals(['Sayings of the Century', 'Sword of Honour'], $result);
     }
 
@@ -75,7 +83,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
     public function testFilterSliceF()
     {
         // Fetch up to the second index
-        $result = (new JSONPath($this->exampleData()))->find("$['store']['books'][-1].title");
+        $result = $this->Subject->find("$['store']['books'][-1].title");
         $this->assertEquals(['The Lord of the Rings'], $result);
     }
 
@@ -86,7 +94,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testChildQuery()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$.store.books[(@.length-1)].title");
+        $result = $this->Subject->find("$.store.books[(@.length-1)].title");
         $this->assertEquals(['The Lord of the Rings'], $result);
     }
 
@@ -96,7 +104,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testQueryMatchLessThan()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$.store.books[?(@.price < 10)].title");
+        $result = $this->Subject->find("$.store.books[?(@.price < 10)].title");
         $this->assertEquals(['Sayings of the Century', 'Moby Dick'], $result);
     }
 
@@ -106,7 +114,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testQueryMatchEquals()
     {
-        $results = (new JSONPath($this->exampleData()))->find('$..books[?(@.author == "J. R. R. Tolkien")].title');
+        $results = $this->Subject->find('$..books[?(@.author == "J. R. R. Tolkien")].title');
         $this->assertEquals($results[0], 'The Lord of the Rings');
     }
 
@@ -115,7 +123,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testWildcardAltNotation()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$.store.books[*].author");
+        $result = $this->Subject->find("$.store.books[*].author");
         $this->assertEquals(['Nigel Rees', 'Evelyn Waugh', 'Herman Melville', 'J. R. R. Tolkien'], $result);
     }
 
@@ -124,7 +132,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveChildSearch()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..author");
+        $result = $this->Subject->find("$..author");
         $this->assertEquals(['Nigel Rees', 'Evelyn Waugh', 'Herman Melville', 'J. R. R. Tolkien'], $result);
     }
 
@@ -135,7 +143,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testWildCard()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$.store.*");
+        $result = $this->Subject->find("$.store.*");
         if (is_object($result[0][0])) {
             $this->assertEquals('Sayings of the Century', $result[0][0]->title);
         } else {
@@ -155,7 +163,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveChildSearchAlt()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$.store..price");
+        $result = $this->Subject->find("$.store..price");
         $this->assertEquals([8.95, 12.99, 8.99, 22.99, 19.95], $result);
     }
 
@@ -165,7 +173,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveChildSearchWithChildIndex()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..books[2].title");
+        $result = $this->Subject->find("$..books[2].title");
         $this->assertEquals(["Moby Dick"], $result);
     }
 
@@ -174,7 +182,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveChildSearchWithChildQuery()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..books[(@.length-1)].title");
+        $result = $this->Subject->find("$..books[(@.length-1)].title");
         $this->assertEquals(["The Lord of the Rings"], $result);
     }
 
@@ -184,7 +192,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveChildSearchWithSliceFilter()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..books[-1:].title");
+        $result = $this->Subject->find("$..books[-1:].title");
         $this->assertEquals(["The Lord of the Rings"], $result);
     }
 
@@ -194,7 +202,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveWithQueryMatch()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..books[?(@.isbn)].isbn");
+        $result = $this->Subject->find("$..books[?(@.isbn)].isbn");
 
         $this->assertEquals(['0-553-21311-3', '0-395-19395-8'], $result);
     }
@@ -205,7 +213,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
      */
     public function testRecursiveWithWildcard()
     {
-        $result = (new JSONPath($this->exampleData()))->find("$..*");
+        $result = $this->Subject->find("$..*");
         $result = json_decode(json_encode($result), true);
 
         $this->assertEquals('Sayings of the Century', $result[0]['books'][0]['title']);
@@ -222,6 +230,7 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
 
     public function testBenchmark()
     {
+        $this->markTestSkipped("Filters are broken in Peekmo");
         $goessnerJsonPath = new PeekmoJsonPath;
         $exampleData = $this->exampleData();
 

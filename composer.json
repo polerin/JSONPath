@@ -9,8 +9,9 @@
         }
     ],
     "autoload": {
-      "psr-0": {
-        "Flow\\JSONPath": "src/"
+      "psr-4": {
+        "Flow\\JSONPath\\": "src",
+        "Flow\\JSONPath\\Tests\\": "tests"
       }
     },
     "require-dev": {
