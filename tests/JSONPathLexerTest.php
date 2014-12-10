@@ -5,6 +5,18 @@ require_once __DIR__ . "/../vendor/autoload.php";
 
 class JSONPathLexerTest extends \PHPUnit_Framework_TestCase
 {
+
+    public function test_Get_Set_Expression()
+    {
+	$lexer = new JSONPathLexer('.*');
+
+        $setResult = $lexer->setExpression('.foo');
+	$this->assertSame($lexer, $setResult);  // make sure it's a fluent interface
+
+        $getResult = $lexer->getExpression();
+        $this->assertEquals('.foo', $getResult);
+    }
+
     public function test_Index_Wildcard()
     {
         $tokens = (new JSONPathLexer('.*'))->parseExpression();

@@ -33,9 +33,24 @@ class JSONPathLexer
     const MATCH_QUERY_MATCH  = '\s* \?\(.+?\) \s*';
     const MATCH_INDEX_ALT    = '\s* ["\']? (.+?) ["\']? \s*';
 
+
+    protected $expression = '';
+
+
     public function __construct($expression)
     {
         $this->expression = $expression;
+    }
+
+    public function setExpression($expression)
+    {
+        $this->expression = $expression;
+        return $this;
+    }
+
+    public function getExpression()
+    {
+        return $this->expression;
     }
 
     public function parseExpressionGroups()

@@ -19,6 +19,15 @@ class JSONPathTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException \Flow\JSONPath\JSONPathException
+     * @expectedExceptionMessage Attempting to build a filter with an invalid token
+     * @dataProvider getInvalidTokens
+     */
+    public function testBuildFilterInvalid($token) {
+	$this->Subject->buildFilter($token);
+    }
+
+    /**
      * $.store.books[0].title
      */
     public function testChildOperators()
@@ -398,6 +407,17 @@ JSON;
 JSON;
         return json_decode($json, $asArray);
 
+    }
+
+    /**
+     * data provider for testBuildFilterInvalid()
+     */
+    public function getInvalidTokens() {
+        return [
+            ['this is a string'],
+            [['value' => 'foo']],
+            [['type' => 'foo']]
+        ];
     }
 }
 

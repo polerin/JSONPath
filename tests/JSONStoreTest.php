@@ -17,9 +17,19 @@ class JSONStoreTest extends JSONPathTest
          $this->Subject = new JSONStore($this->exampleData());
     }
 
+
+    /**
+     * Test that you get the same collection by walking using an explicit path and an access token
+     */ 
     public function testGet()
     {
-//	$result1 = $
+	$this->markTestIncomplete("Need to figure out what's up with the filter.");
+	$result1 = $this->Subject->find('$.store');
+        $result2 = $this->Subject->store;
+
+
+        $this->assertSame($result1, $result2);
     }
+
 }
 

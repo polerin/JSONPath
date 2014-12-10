@@ -10,6 +10,7 @@ class JSONPath
 
     protected $data;
     protected $options;
+    protected $Lexer;
 
     const ALLOW_MAGIC = 1;
 
@@ -32,21 +33,33 @@ class JSONPath
 
         while (count($tokens)) {
             $token = array_shift($tokens);
-
             $filter = $this->buildFilter($token);
 
-            $filteredData = [];
-
-            foreach ($collectionData as $value) {
-                if ($this->isFilterable($value)) {
-                    $filteredData = array_merge($filteredData, $filter->filter($value));
-                }
-            }
-
-            $collectionData = $filteredData;
+            $collectionData = $this->filterData($filter, $collectionData);
         }
 
         return $collectionData;
+    }
+
+
+    /**
+     * Operate on a data set using a pre-constructed filter
+     *
+     * @param AbstractFilter $filter The filter to apply
+     * @param ArrayAccess $collectionData The data to filter
+     *
+     * @return mixed A reference to the 
+     */
+    protected function &filterData(Filters\AbstractFilter $filter, $collectionData) {
+        $filteredData = [];
+
+        foreach ($collectionData as $value) {
+            if ($this->isFilterable($value)) {
+                $filteredData = array_merge($filteredData, $filter->filter($value));
+            }
+        }
+
+        return $filteredData;
     }
 
     public function isFilterable($value)
@@ -84,6 +97,10 @@ class JSONPath
      */
     public function buildFilter($token)
     {
+	if ((!is_array($token) && !($token instanceof \ArrayAccess)) || !isset($token['type'], $token['value'])) {
+            throw new JSONPathException("Attempting to build a filter with an invalid token");
+        }
+
         $filterClass = 'Flow\\JSONPath\\Filters\\' . ucfirst($token['type']) . 'Filter';
 
         if (! class_exists($filterClass)) {
@@ -108,14 +125,19 @@ class JSONPath
 
         $expression = trim($expression);
         $expression = preg_replace('/^\$/', '', $expression);
-
-        $lexer = new JSONPathLexer($expression);
-
-        $tokens = $lexer->parseExpression();
+        $tokens = $this->getLexer()->setExpression($expression)->parseExpression();
 
         static::$tokenCache[$cacheKey] = $tokens;
 
         return $tokens;
     }
 
+    public function getLexer()
+    {
+        if (is_null($this->Lexer)) {
+            $this->Lexer = new JSONPathLexer('.*');
+        }
+
+        return $this->Lexer;
+    }
 }
